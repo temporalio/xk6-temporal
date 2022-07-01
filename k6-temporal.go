@@ -15,11 +15,14 @@ func init() {
 }
 
 // RootModule is the global module object type. It is instantiated once per test
-// run and will be used to create `k6/x/sql` module instances for each VU.
+// run and will be used to create `k6/x/temporal` module instances for each VU.
 type RootModule struct{}
 
 // Temporal represents an instance of the Temporal module for every VU.
-type Temporal struct{}
+type Temporal struct {
+	SharedClientOptions *client.Options
+	SharedClient        *Client
+}
 
 // Client is the exported module instance.
 type Client struct {
@@ -46,6 +49,8 @@ func (temporal *Temporal) Exports() modules.Exports {
 
 // NewClient returns a new Temporal Client.
 func (*Temporal) NewClient(options client.Options) (*Client, error) {
+	options.Logger = NewNopLogger()
+
 	c, err := client.Dial(options)
 	if err != nil {
 		return nil, err
@@ -55,27 +60,59 @@ func (*Temporal) NewClient(options client.Options) (*Client, error) {
 }
 
 type (
-	WorkflowRun struct {
-		run   client.WorkflowRun
-		ID    string
-		RunID string
-	}
-
-	WorkflowResult struct {
-		Result interface{}
-		Error  error
+	WorkflowHandle struct {
+		client *Client
+		run    client.WorkflowRun
+		ID     string
+		RunID  string
 	}
 )
 
-func (r WorkflowRun) Get() WorkflowResult {
-	var result WorkflowResult
+func (r WorkflowHandle) Result() (interface{}, error) {
+	var result interface{}
 
-	result.Error = r.run.Get(context.Background(), &result.Result)
+	err := r.run.Get(context.Background(), &result)
 
-	return result
+	return result, err
 }
 
-func (c *Client) StartWorkflow(options client.StartWorkflowOptions, workflowType string, workflowArgs ...interface{}) (WorkflowRun, error) {
+func (r WorkflowHandle) Signal(name string, arg interface{}) error {
+	return r.client.sdkclient.SignalWorkflow(
+		context.Background(),
+		r.ID,
+		r.RunID,
+		name,
+		arg,
+	)
+}
+
+func (r WorkflowHandle) Cancel() error {
+	return r.client.sdkclient.CancelWorkflow(
+		context.Background(),
+		r.ID,
+		r.RunID,
+	)
+}
+
+func (r WorkflowHandle) Terminate(reason string) error {
+	return r.client.sdkclient.TerminateWorkflow(
+		context.Background(),
+		r.ID,
+		r.RunID,
+		reason,
+	)
+}
+
+func (c *Client) Close() {
+	c.sdkclient.Close()
+}
+
+func (c *Client) GetWorkflowHandle(workflowID string, runID string) WorkflowHandle {
+	run := c.sdkclient.GetWorkflow(context.Background(), workflowID, runID)
+	return WorkflowHandle{client: c, run: run, ID: workflowID, RunID: runID}
+}
+
+func (c *Client) StartWorkflow(options client.StartWorkflowOptions, workflowType string, workflowArgs ...interface{}) (WorkflowHandle, error) {
 	run, err := c.sdkclient.ExecuteWorkflow(
 		context.Background(),
 		options,
@@ -84,10 +121,28 @@ func (c *Client) StartWorkflow(options client.StartWorkflowOptions, workflowType
 	)
 
 	if err != nil {
-		return WorkflowRun{}, err
+		return WorkflowHandle{}, err
 	}
 
-	return WorkflowRun{run: run, ID: run.GetID(), RunID: run.GetRunID()}, err
+	return WorkflowHandle{client: c, run: run, ID: run.GetID(), RunID: run.GetRunID()}, err
+}
+
+func (c *Client) SignalWithStartWorkflow(workflowID string, signalName string, signalArg interface{}, options client.StartWorkflowOptions, workflowType string, workflowArgs ...interface{}) (WorkflowHandle, error) {
+	run, err := c.sdkclient.SignalWithStartWorkflow(
+		context.Background(),
+		workflowID,
+		signalName,
+		signalArg,
+		options,
+		workflowType,
+		workflowArgs...,
+	)
+
+	if err != nil {
+		return WorkflowHandle{}, err
+	}
+
+	return WorkflowHandle{client: c, run: run, ID: run.GetID(), RunID: run.GetRunID()}, err
 }
 
 func (c *Client) WaitForAllWorkflowToComplete(namespace string) error {
