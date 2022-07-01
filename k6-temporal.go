@@ -19,10 +19,7 @@ func init() {
 type RootModule struct{}
 
 // Temporal represents an instance of the Temporal module for every VU.
-type Temporal struct {
-	SharedClientOptions *client.Options
-	SharedClient        *Client
-}
+type Temporal struct{}
 
 // Client is the exported module instance.
 type Client struct {
