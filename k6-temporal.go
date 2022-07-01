@@ -2,7 +2,9 @@ package temporal
 
 import (
 	"context"
+	"time"
 
+	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 
 	"go.k6.io/k6/js/modules"
@@ -86,4 +88,26 @@ func (c *Client) StartWorkflow(options client.StartWorkflowOptions, workflowType
 	}
 
 	return WorkflowRun{run: run, ID: run.GetID(), RunID: run.GetRunID()}, err
+}
+
+func (c *Client) WaitForAllWorkflowToComplete(namespace string) error {
+	request := workflowservice.ListOpenWorkflowExecutionsRequest{
+		Namespace:       namespace,
+		MaximumPageSize: 1,
+	}
+
+	for {
+		response, err := c.sdkclient.ListOpenWorkflow(context.Background(), &request)
+		if err != nil {
+			return err
+		}
+
+		if len(response.Executions) == 0 {
+			break
+		}
+
+		time.Sleep(time.Second)
+	}
+
+	return nil
 }
