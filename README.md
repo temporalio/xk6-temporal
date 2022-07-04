@@ -6,4 +6,4 @@ Note: This project is still a spike. The API may change at anytime as we learn f
 
 ## Usage
 
-See [our example](./example.js)
+See [our examples](./examples)
