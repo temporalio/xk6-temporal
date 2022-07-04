@@ -30,15 +30,14 @@ func newPrometheusScope(c prometheus.Configuration) tally.Scope {
 	if err != nil {
 		log.Fatalln("error creating prometheus reporter", err)
 	}
+
 	scopeOpts := tally.ScopeOptions{
 		CachedReporter:  reporter,
 		Separator:       prometheus.DefaultSeparator,
 		SanitizeOptions: &sanitizeOptions,
-		Prefix:          "temporal_samples",
 	}
 	scope, _ := tally.NewRootScope(scopeOpts, time.Second)
 
-	log.Println("prometheus metrics scope created")
 	return scope
 }
 

@@ -3,7 +3,6 @@ module github.com/temporalio/xk6-temporal
 go 1.18
 
 require (
-	github.com/docker/go-metrics v0.0.1
 	github.com/prometheus/client_golang v1.12.2
 	github.com/uber-go/tally/v4 v4.1.2
 	go.k6.io/k6 v0.38.3
