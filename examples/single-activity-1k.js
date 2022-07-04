@@ -2,30 +2,26 @@ import temporal from 'k6/x/temporal';
 import { scenario } from 'k6/execution';
 
 export const options = {
-    teardownTimeout: '10m',
     scenarios: {
       contacts: {
-        executor: 'constant-arrival-rate',
-        duration: '60s',
-        rate: 50,
-        timeUnit: '1s',
-        preAllocatedVUs: 1,
-        maxVUs: 1000,
+        executor: 'shared-iterations',
+        iterations: '1000',
+        vus: 25,
       },
     },
 };
 
 export default () => {
-    const client = temporal.newClient({ HostPort: "127.0.0.1:7233" })
+    const client = temporal.newClient({ HostPort: __ENV.TEMPORAL_GRPC_ENDPOINT })
 
     const handle = client.startWorkflow(
         {
             namespace: 'default',
-            task_queue: 'benchtest',
+            task_queue: 'benchmark',
             id: 'wf-' + scenario.iterationInTest,
         },
-        'BenchTestWorkflow',
-        'john',
+        'SingleActivityWorkflow',
+        'bob',
     )
 
     // Wait until the workflow has completed.
