@@ -378,7 +378,7 @@
       "repeat": null
     },
     {
-      "title": "Workers",
+      "title": "Service",
       "showTitle": true,
       "collapse": false,
       "editable": true,
@@ -390,6 +390,223 @@
           "error": false,
           "gridPos": {},
           "id": 6,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Progress Event Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~\"RecordActivityTaskHeartbeat|RespondWorkflowTaskCompleted|RespondActivityTaskCompleted\"}[$interval])) by (namespace, operation, le))",
+              "legendFormat": "{{namespace}}: {{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 7,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Timer Task Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~\"Timer.*\"}[$interval])) by (namespace, operation, le))",
+              "legendFormat": "{{namespace}}: {{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 8,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Transfer Task Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~\"Transfer.*\"}[$interval])) by (namespace, operation, le))",
+              "legendFormat": "{{namespace}}: {{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        }
+      ],
+      "repeat": null
+    },
+    {
+      "title": "Workers",
+      "showTitle": true,
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 9,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -458,7 +675,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 7,
+          "id": 10,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -527,7 +744,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 8,
+          "id": 11,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -596,7 +813,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 9,
+          "id": 12,
           "isNew": false,
           "renderer": "flot",
           "span": 6,

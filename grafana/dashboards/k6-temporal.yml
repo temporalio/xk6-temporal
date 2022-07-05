@@ -56,6 +56,35 @@ rows:
             - prometheus:
                 query: "sum by (workflow_type) (rate(temporal_workflow_completed[$interval]))"
                 legend: "{{workflow_type}}"
+  - name: Service
+    panels:
+      - graph:
+          title: Progress Event Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~"RecordActivityTaskHeartbeat|RespondWorkflowTaskCompleted|RespondActivityTaskCompleted"}[$interval])) by (namespace, operation, le))
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: s }
+      - graph:
+          title: Timer Task Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~"Timer.*"}[$interval])) by (namespace, operation, le))
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: s }
+      - graph:
+          title: Transfer Task Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~"Transfer.*"}[$interval])) by (namespace, operation, le))
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: s }
   - name: Workers
     panels:
       - graph:
