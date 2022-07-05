@@ -3,7 +3,7 @@ import { scenario } from 'k6/execution';
 
 export const options = {
     scenarios: {
-      contacts: {
+      single_activity_workflow_1k: {
         executor: 'shared-iterations',
         iterations: '1000',
         vus: 25,

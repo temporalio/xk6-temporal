@@ -1,0 +1,92 @@
+# dashboard.yaml
+title: K6 Temporal
+
+editable: true
+tags: [generated]
+time: [now-30m, now]
+auto_refresh: 10s
+
+variables:
+  - interval:
+      name: interval
+      label: Interval
+      values: ["30s", "1m", "5m"]
+      default: 1m
+
+rows:
+  - name: K6
+    panels:
+      - graph:
+          title: VUs
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "k6_vus"
+                legend: "VU"
+      - graph:
+          title: Iterations/second
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "sum by (scenario) (rate(k6_iterations[$interval]))"
+                legend: "{{scenario}}"
+
+      - graph:
+          title: Dropped iterations
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "sum by (scenario) (k6_dropped_iterations)"
+                legend: "{{scenario}}"
+      - graph:
+          title: Iteration Duration 95%ile
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "sum by (scenario) (k6_iteration_duration_p95)"
+                legend: "{{scenario}}"
+          axes:
+            left: { unit: ms }
+  - name: Workflows
+    panels:
+      - graph:
+          title: Workflow Completion Rate
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "sum by (workflow_type) (rate(temporal_workflow_completed[$interval]))"
+                legend: "{{workflow_type}}"
+  - name: Workers
+    panels:
+      - graph:
+          title: Workflow Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "rate(temporal_workflow_task_schedule_to_start_latency_sum[$interval])"
+                legend: "{{workflow_type}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Activity Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: "sum by (activity_type) (rate(temporal_activity_schedule_to_start_latency_sum[$interval]))"
+                legend: "{{activity_type}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Workflow Task Slots Available
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="WorkflowWorker"})
+                legend: "{{namespace}}: {{task_queue}}"
+      - graph:
+          title: Activity Task Slots Available
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="ActivityWorker"})
+                legend: "{{namespace}}: {{task_queue}}"
