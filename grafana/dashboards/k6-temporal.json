@@ -127,7 +127,7 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (scenario) (rate(k6_iterations[$interval]))",
+              "expr": "sum (rate(k6_iterations[$interval])) by (scenario)",
               "legendFormat": "{{scenario}}",
               "format": "time_series"
             }
@@ -196,7 +196,7 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (scenario) (k6_dropped_iterations)",
+              "expr": "sum (k6_dropped_iterations) by (scenario)",
               "legendFormat": "{{scenario}}",
               "format": "time_series"
             }
@@ -265,8 +265,146 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (scenario) (k6_iteration_duration_p95)",
+              "expr": "sum (k6_iteration_duration_p95) by (scenario)",
               "legendFormat": "{{scenario}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 5,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Request Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "sum (k6_temporal_request_latency_p95) by (namespace, operation)",
+              "legendFormat": "{{namespace}}: {{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 6,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Long Poll Request Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "sum (k6_temporal_long_request_latency_p95) by (namespace, operation)",
+              "legendFormat": "{{namespace}}: {{operation}}",
               "format": "time_series"
             }
           ],
@@ -310,7 +448,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 5,
+          "id": 7,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -344,8 +482,8 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (workflow_type) (rate(temporal_workflow_completed[$interval]))",
-              "legendFormat": "{{workflow_type}}",
+              "expr": "sum (rate(temporal_workflow_completed[$interval])) by (namespace, workflow_type)",
+              "legendFormat": "{{namespace}}: {{workflow_type}}",
               "format": "time_series"
             }
           ],
@@ -378,6 +516,234 @@
       "repeat": null
     },
     {
+      "title": "Persistence",
+      "showTitle": true,
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 8,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Create/Update Workflows/second",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "sum(rate(persistence_requests{operation=~\"CreateWorkflowExecution|UpdateWorkflowExecution\"}[$interval])) by (operation)",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 9,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Create Workflow Latency",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation=\"CreateWorkflowExecution\"}[$interval])) by (namespace, le)) * 1000",
+              "legendFormat": "90",
+              "format": "time_series"
+            },
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation=\"CreateWorkflowExecution\"}[$interval])) by (namespace, le)) * 1000",
+              "legendFormat": "95",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 10,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Update Workflow Latency",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation=\"UpdateWorkflowExecution\"}[$interval])) by (namespace, le)) * 1000",
+              "legendFormat": "90",
+              "format": "time_series"
+            },
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation=\"UpdateWorkflowExecution\"}[$interval])) by (namespace, le)) * 1000",
+              "legendFormat": "95",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        }
+      ],
+      "repeat": null
+    },
+    {
       "title": "Service",
       "showTitle": true,
       "collapse": false,
@@ -389,7 +755,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 6,
+          "id": 11,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -458,7 +824,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 7,
+          "id": 12,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -527,7 +893,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 8,
+          "id": 13,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -590,6 +956,75 @@
               "show": false
             }
           ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 14,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "External Event Latency p95",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~\"StartWorkflowExecution|SignalWithStartWorkflowExecution|RequestCancelWorkflowExecution|SignalWorkflowExecution|TerminateWorkflowExecution\"}[$interval])) by (namespace, operation, le))",
+              "legendFormat": "{{namespace}}: {{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
         }
       ],
       "repeat": null
@@ -606,7 +1041,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 9,
+          "id": 15,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -675,7 +1110,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 10,
+          "id": 16,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -709,7 +1144,7 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (activity_type) (rate(temporal_activity_schedule_to_start_latency_sum[$interval]))",
+              "expr": "sum (rate(temporal_activity_schedule_to_start_latency_sum[$interval])) by (activity_type)",
               "legendFormat": "{{activity_type}}",
               "format": "time_series"
             }
@@ -744,7 +1179,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 11,
+          "id": 17,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -778,7 +1213,7 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!=\"temporal_system\",worker_type=\"WorkflowWorker\"})",
+              "expr": "sum (temporal_worker_task_slots_available{namespace!=\"temporal_system\",worker_type=\"WorkflowWorker\"}) by (namespace, task_queue)",
               "legendFormat": "{{namespace}}: {{task_queue}}",
               "format": "time_series"
             }
@@ -813,7 +1248,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 12,
+          "id": 18,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -847,7 +1282,7 @@
           "targets": [
             {
               "refId": "",
-              "expr": "sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!=\"temporal_system\",worker_type=\"ActivityWorker\"})",
+              "expr": "sum (temporal_worker_task_slots_available{namespace!=\"temporal_system\",worker_type=\"ActivityWorker\"})  by (namespace, task_queue)",
               "legendFormat": "{{namespace}}: {{task_queue}}",
               "format": "time_series"
             }

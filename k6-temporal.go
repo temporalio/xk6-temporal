@@ -18,8 +18,11 @@ func init() {
 // run and will be used to create `k6/x/temporal` module instances for each VU.
 type RootModule struct{}
 
-// Temporal represents an instance of the Temporal module for every VU.
-type Temporal struct{}
+// ModuleInstance represents an instance of the module for every VU.
+type ModuleInstance struct {
+	vu            modules.VU
+	customMetrics CustomMetrics
+}
 
 // Client is the exported module instance.
 type Client struct {
@@ -29,24 +32,28 @@ type Client struct {
 // Ensure the interfaces are implemented correctly.
 var (
 	_ modules.Module   = &RootModule{}
-	_ modules.Instance = &Temporal{}
+	_ modules.Instance = &ModuleInstance{}
 )
 
 // NewModuleInstance implements the modules.Module interface to return
 // a new instance for each VU.
 func (*RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
-	return &Temporal{}
+	return &ModuleInstance{
+		vu:            vu,
+		customMetrics: RegisterMetrics(vu.InitEnv().Registry),
+	}
 }
 
 // Exports implements the modules.Instance interface and returns the exports
 // of the JS module.
-func (temporal *Temporal) Exports() modules.Exports {
+func (temporal *ModuleInstance) Exports() modules.Exports {
 	return modules.Exports{Default: temporal}
 }
 
 // NewClient returns a new Temporal Client.
-func (*Temporal) NewClient(options client.Options) (*Client, error) {
+func (m *ModuleInstance) NewClient(options client.Options) (*Client, error) {
 	options.Logger = NewNopLogger()
+	options.MetricsHandler = NewMetricsHandler(m.vu, map[string]string{}, m.customMetrics)
 
 	c, err := client.Dial(options)
 	if err != nil {

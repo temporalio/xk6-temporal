@@ -28,25 +28,42 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "sum by (scenario) (rate(k6_iterations[$interval]))"
+                query: sum (rate(k6_iterations[$interval])) by (scenario)
                 legend: "{{scenario}}"
-
       - graph:
           title: Dropped iterations
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "sum by (scenario) (k6_dropped_iterations)"
+                query: sum (k6_dropped_iterations) by (scenario)
                 legend: "{{scenario}}"
       - graph:
           title: Iteration Duration 95%ile
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "sum by (scenario) (k6_iteration_duration_p95)"
+                query: sum (k6_iteration_duration_p95) by (scenario)
                 legend: "{{scenario}}"
           axes:
             left: { unit: ms }
+      - graph:
+          title: Request Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (k6_temporal_request_latency_p95) by (namespace, operation)
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Long Poll Request Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (k6_temporal_long_request_latency_p95) by (namespace, operation)
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: ms }          
   - name: Workflows
     panels:
       - graph:
@@ -54,8 +71,40 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "sum by (workflow_type) (rate(temporal_workflow_completed[$interval]))"
-                legend: "{{workflow_type}}"
+                query: sum (rate(temporal_workflow_completed[$interval])) by (namespace, workflow_type)
+                legend: "{{namespace}}: {{workflow_type}}"
+  - name: Persistence
+    panels:
+      - graph:
+          title: Create/Update Workflows/second
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum(rate(persistence_requests{operation=~"CreateWorkflowExecution|UpdateWorkflowExecution"}[$interval])) by (operation)
+      - graph:
+          title: Create Workflow Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation="CreateWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "90"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="CreateWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "95"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Update Workflow Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation="UpdateWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "90"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="UpdateWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "95"
+          axes:
+            left: { unit: ms }
   - name: Service
     panels:
       - graph:
@@ -85,6 +134,15 @@ rows:
                 legend: "{{namespace}}: {{operation}}"
           axes:
             left: { unit: s }
+      - graph:
+          title: External Event Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~"StartWorkflowExecution|SignalWithStartWorkflowExecution|RequestCancelWorkflowExecution|SignalWorkflowExecution|TerminateWorkflowExecution"}[$interval])) by (namespace, operation, le))
+                legend: "{{namespace}}: {{operation}}"
+          axes:
+            left: { unit: s }
   - name: Workers
     panels:
       - graph:
@@ -92,7 +150,7 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "rate(temporal_workflow_task_schedule_to_start_latency_sum[$interval])"
+                query: rate(temporal_workflow_task_schedule_to_start_latency_sum[$interval])
                 legend: "{{workflow_type}}"
           axes:
             left: { unit: ms }
@@ -101,7 +159,7 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: "sum by (activity_type) (rate(temporal_activity_schedule_to_start_latency_sum[$interval]))"
+                query: sum (rate(temporal_activity_schedule_to_start_latency_sum[$interval])) by (activity_type)
                 legend: "{{activity_type}}"
           axes:
             left: { unit: ms }
@@ -110,12 +168,12 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="WorkflowWorker"})
+                query: sum (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="WorkflowWorker"}) by (namespace, task_queue)
                 legend: "{{namespace}}: {{task_queue}}"
       - graph:
           title: Activity Task Slots Available
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum by (namespace, task_queue) (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="ActivityWorker"})
+                query: sum (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="ActivityWorker"})  by (namespace, task_queue)
                 legend: "{{namespace}}: {{task_queue}}"
