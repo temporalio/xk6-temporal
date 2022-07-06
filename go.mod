@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/uber-go/tally/v4 v4.1.2
-	go.k6.io/k6 v0.38.3
+	go.k6.io/k6 v0.39.0
 	go.temporal.io/api v1.8.0
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/sdk/contrib/tally v0.1.0
@@ -16,7 +16,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
-	github.com/dop251/goja v0.0.0-20220405120441-9037c2b61cbf // indirect
+	github.com/dop251/goja v0.0.0-20220516123900-4418d4575a41 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4-0.20211119122758-180fcef48034+incompatible // indirect
@@ -50,7 +50,7 @@ require (
 	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8 // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
