@@ -5,6 +5,7 @@ editable: true
 tags: [generated]
 time: [now-30m, now]
 auto_refresh: 10s
+shared_crosshair: true
 
 variables:
   - interval:
@@ -46,6 +47,18 @@ rows:
                 legend: "{{scenario}}"
           axes:
             left: { unit: ms }
+  - name: K6 Temporal Clients
+    panels:
+      - graph:
+          title: Requests/second
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(k6_temporal_request[$interval])) by (namespace, operation)
+                legend: "{{namespace}}: {{operation}}"
+            - prometheus:
+                query: sum (rate(k6_temporal_long_request[$interval])) by (namespace, operation)
+                legend: "{{namespace}}: {{operation}}"
       - graph:
           title: Request Latency p95
           datasource: temporal_prometheus
@@ -63,7 +76,7 @@ rows:
                 query: sum (k6_temporal_long_request_latency_p95) by (namespace, operation)
                 legend: "{{namespace}}: {{operation}}"
           axes:
-            left: { unit: ms }          
+            left: { unit: ms }
   - name: Workflows
     panels:
       - graph:
@@ -81,6 +94,7 @@ rows:
           targets:
             - prometheus:
                 query: sum(rate(persistence_requests{operation=~"CreateWorkflowExecution|UpdateWorkflowExecution"}[$interval])) by (operation)
+                legend: "{{operation}}"
       - graph:
           title: Create Workflow Latency
           datasource: temporal_prometheus
@@ -146,6 +160,13 @@ rows:
   - name: Workers
     panels:
       - graph:
+          title: Workflow Task Execution count
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(temporal_workflow_task_execution_latency_count[$interval])) by (namespace, workflow_type)
+                legend: "{{namespace}}: {{workflow_type}}"
+      - graph:
           title: Workflow Task Schedule to Start Latency
           datasource: temporal_prometheus
           targets:
@@ -154,6 +175,13 @@ rows:
                 legend: "{{workflow_type}}"
           axes:
             left: { unit: ms }
+      - graph:
+          title: Activity Execution count
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(temporal_activity_execution_latency_count[$interval])) by (namespace, activity_type)
+                legend: "{{namespace}}: {{activity_type}}"
       - graph:
           title: Activity Task Schedule to Start Latency
           datasource: temporal_prometheus
