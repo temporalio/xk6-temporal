@@ -53,3 +53,4 @@ services:
       target: worker
     environment:
       - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+    restart: unless-stopped

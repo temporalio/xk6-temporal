@@ -16,7 +16,6 @@ export default () => {
 
     const handle = client.startWorkflow(
         {
-            namespace: 'default',
             task_queue: 'benchmark',
             id: 'wf-' + scenario.iterationInTest,
         },

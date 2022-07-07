@@ -1329,7 +1329,7 @@
       "repeat": null
     },
     {
-      "title": "Workers",
+      "title": "Locks",
       "showTitle": true,
       "collapse": false,
       "editable": true,
@@ -1341,6 +1341,154 @@
           "error": false,
           "gridPos": {},
           "id": 19,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Workflow History Lock",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.99, sum(rate(cache_latency_bucket{operation=\"HistoryCacheGetOrCreate\"}[$interval])) by (operation, le))",
+              "legendFormat": "{{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        },
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 20,
+          "isNew": false,
+          "renderer": "flot",
+          "span": 6,
+          "title": "Shard Lock",
+          "transparent": false,
+          "type": "graph",
+          "aliasColors": {},
+          "bars": false,
+          "fill": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "",
+              "expr": "histogram_quantile(0.99, sum(rate(lock_latency_bucket{operation=\"ShardInfo\"}[$interval])) by (operation, le))",
+              "legendFormat": "{{operation}}",
+              "format": "time_series"
+            }
+          ],
+          "tooltip": {
+            "shared": true,
+            "value_type": "",
+            "sort": 2
+          },
+          "x-axis": true,
+          "y-axis": true,
+          "xaxis": {
+            "format": "time",
+            "logBase": 1,
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": false
+            }
+          ]
+        }
+      ],
+      "repeat": null
+    },
+    {
+      "title": "Workers",
+      "showTitle": true,
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "datasource": "temporal_prometheus",
+          "editable": false,
+          "error": false,
+          "gridPos": {},
+          "id": 21,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1409,7 +1557,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 20,
+          "id": 22,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1478,7 +1626,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 21,
+          "id": 23,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1547,7 +1695,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 22,
+          "id": 24,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1616,7 +1764,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 23,
+          "id": 25,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1691,7 +1839,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 24,
+          "id": 26,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1760,7 +1908,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 25,
+          "id": 27,
           "isNew": false,
           "renderer": "flot",
           "span": 6,
@@ -1829,7 +1977,7 @@
           "editable": false,
           "error": false,
           "gridPos": {},
-          "id": 26,
+          "id": 28,
           "isNew": false,
           "renderer": "flot",
           "span": 6,

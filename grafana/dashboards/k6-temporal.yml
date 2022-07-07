@@ -185,6 +185,26 @@ rows:
                 legend: "{{namespace}}: {{operation}}"
           axes:
             left: { unit: s }
+  - name: Locks
+    panels:
+      - graph:
+          title: Workflow History Lock
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.99, sum(rate(cache_latency_bucket{operation="HistoryCacheGetOrCreate"}[$interval])) by (operation, le))
+                legend: "{{operation}}"
+          axes:
+            left: { unit: s }
+      - graph:
+          title: Shard Lock
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.99, sum(rate(lock_latency_bucket{operation="ShardInfo"}[$interval])) by (operation, le))
+                legend: "{{operation}}"
+          axes:
+            left: { unit: s }
   - name: Workers
     panels:
       - graph:
