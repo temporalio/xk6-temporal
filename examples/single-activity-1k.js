@@ -12,7 +12,7 @@ export const options = {
 };
 
 export default () => {
-    const client = temporal.newClient({ HostPort: __ENV.TEMPORAL_GRPC_ENDPOINT })
+    const client = temporal.newClient({ host_port: __ENV.TEMPORAL_GRPC_ENDPOINT })
 
     const handle = client.startWorkflow(
         {

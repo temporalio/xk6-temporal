@@ -4,7 +4,7 @@ services:
     build:
       context: .
       target: temporalite
-    command: --log-level debug
+    command: --log-level debug --history-shards 32
     ports:
       - 7233:7233
       - 8233:8233

@@ -80,12 +80,28 @@ rows:
   - name: Workflows
     panels:
       - graph:
+          title: Workflow Start Rate
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(temporal_workflow_start[$interval])) by (namespace, workflow_type)
+                legend: "{{namespace}}: {{workflow_type}}"
+      - graph:
           title: Workflow Completion Rate
           datasource: temporal_prometheus
           targets:
             - prometheus:
                 query: sum (rate(temporal_workflow_completed[$interval])) by (namespace, workflow_type)
                 legend: "{{namespace}}: {{workflow_type}}"
+      - graph:
+          title: Workflow Completion Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_workflow_endtoend_latency_bucket[$interval])) by (namespace, task_queue, workflow_type, le)) * 1000
+                legend: "{{namespace}}: {{task_queue}} {{workflow_type}}"
+          axes:
+            left: { unit: ms }
   - name: Persistence
     panels:
       - graph:
@@ -116,6 +132,18 @@ rows:
                 legend: "90"
             - prometheus:
                 query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="UpdateWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "95"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Get Workflow Execution Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                legend: "90"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
                 legend: "95"
           axes:
             left: { unit: ms }
@@ -191,6 +219,23 @@ rows:
                 legend: "{{activity_type}}"
           axes:
             left: { unit: ms }
+      - graph:
+          title: Workflow Task Poll
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(temporal_workflow_task_queue_poll_succeed{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
+                legend: "{{namespace}}: {{task_queue}} Succeed"
+            - prometheus:
+                query: sum (rate(temporal_workflow_task_queue_poll_empty{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
+                legend: "{{namespace}}: {{task_queue}} Empty"
+      - graph:
+          title: Activity Task Poll
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(temporal_activity_poll_no_task{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
+                legend: "{{namespace}}: {{task_queue}} Emtpy"
       - graph:
           title: Workflow Task Slots Available
           datasource: temporal_prometheus

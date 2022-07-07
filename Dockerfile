@@ -1,6 +1,6 @@
 FROM golang:1.18 as temporalite
 
-RUN git clone -b rh-metrics-port https://github.com/robholland/temporalite
+RUN git clone -b rh-shard https://github.com/robholland/temporalite
 RUN cd temporalite && go install ./cmd/temporalite
 EXPOSE 7233
 EXPOSE 8233
