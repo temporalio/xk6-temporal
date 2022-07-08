@@ -1,4 +1,4 @@
-package temporal
+package logger
 
 import (
 	"go.temporal.io/sdk/log"

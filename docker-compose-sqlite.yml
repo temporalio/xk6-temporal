@@ -37,9 +37,3 @@ services:
       - type: bind
         source: ./grafana/dashboards
         target: /var/lib/grafana/dashboards
-  worker:
-    build:
-      context: .
-      target: worker
-    environment:
-      - TEMPORAL_GRPC_ENDPOINT=temporal:7233

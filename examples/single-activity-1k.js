@@ -11,6 +11,13 @@ export const options = {
     },
 };
 
+export function setup() {
+  const client = temporal.newClient({ host_port: __ENV.TEMPORAL_GRPC_ENDPOINT })
+  const worker = temporal.newWorker(client, {})
+
+  worker.start()
+}
+
 export default () => {
     const client = temporal.newClient({ host_port: __ENV.TEMPORAL_GRPC_ENDPOINT })
 

@@ -1,31 +1,18 @@
-package main
+package worker
 
 import (
-	"log"
-	"os"
-
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
 
-func main() {
-	c, err := client.Dial(client.Options{
-		HostPort:       os.Getenv("TEMPORAL_GRPC_ENDPOINT"),
-		MetricsHandler: newMetricsHandler("0.0.0.0:9000"),
-	})
-	if err != nil {
-		log.Fatalln("Unable to create client", err)
-	}
-	defer c.Close()
+type Options = worker.Options
+type Worker = worker.Worker
 
-	w := worker.New(c, "benchmark", worker.Options{})
+func NewWorker(client client.Client, options Options) (worker.Worker, error) {
+	w := worker.New(client, "benchmark", options)
 
 	w.RegisterWorkflow(SingleActivityWorkflow)
-
 	w.RegisterActivity(SayHello)
 
-	err = w.Run(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return w, nil
 }
