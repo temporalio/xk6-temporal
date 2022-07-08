@@ -25,7 +25,7 @@ rows:
                 query: "k6_vus"
                 legend: "VU"
       - graph:
-          title: Iterations/second
+          title: Iteration Rate
           datasource: temporal_prometheus
           targets:
             - prometheus:
@@ -36,36 +36,54 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (k6_dropped_iterations) by (scenario)
+                query: sum (rate(k6_dropped_iterations[$interval])) by (scenario)
                 legend: "{{scenario}}"
       - graph:
           title: Iteration Duration 95%ile
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (k6_iteration_duration_p95) by (scenario)
+                query: avg (k6_iteration_duration_p95{scenario=~".+"}) by (scenario)
                 legend: "{{scenario}}"
           axes:
             left: { unit: ms }
-  - name: K6 Temporal Clients
+  - name: RPC
     panels:
       - graph:
-          title: Requests/second
+          title: Request Rate
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (rate(k6_temporal_request[$interval])) by (namespace, operation)
-                legend: "{{namespace}}: {{operation}}"
+                query: sum (rate(k6_temporal_request[$interval])) by (operation)
+                legend: "{{operation}}"
             - prometheus:
-                query: sum (rate(k6_temporal_long_request[$interval])) by (namespace, operation)
-                legend: "{{namespace}}: {{operation}}"
+                query: sum (rate(k6_temporal_long_request[$interval])) by (operation)
+                legend: "{{operation}}"
       - graph:
           title: Request Latency p95
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (k6_temporal_request_latency_p95) by (namespace, operation)
-                legend: "{{namespace}}: {{operation}}"
+                query: avg (k6_temporal_request_latency_p95) by (operation)
+                legend: "{{operation}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Progress Response Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_request_latency_p95{operation=~"RecordActivityTaskHeartbeat|RespondWorkflowTaskCompleted|RespondActivityTaskCompleted"}) by (operation)
+                legend: "{{operation}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: External Event Request Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_request_latency_p95{operation=~"StartWorkflowExecution|SignalWithStartWorkflowExecution|RequestCancelWorkflowExecution|SignalWorkflowExecution|TerminateWorkflowExecution"}) by (operation)
+                legend: "{{operation}}"
           axes:
             left: { unit: ms }
       - graph:
@@ -73,43 +91,74 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (k6_temporal_long_request_latency_p95) by (namespace, operation)
-                legend: "{{namespace}}: {{operation}}"
+                query: avg (k6_temporal_long_request_latency_p95) by (operation)
+                legend: "{{operation}}"
           axes:
             left: { unit: ms }
   - name: Workflows
     panels:
       - graph:
-          title: Workflow Start Rate
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: sum (rate(temporal_workflow_start[$interval])) by (namespace, workflow_type)
-                legend: "{{namespace}}: {{workflow_type}}"
-      - graph:
           title: Workflow Completion Rate
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (rate(temporal_workflow_completed[$interval])) by (namespace, workflow_type)
-                legend: "{{namespace}}: {{workflow_type}}"
+                query: sum (rate(k6_temporal_workflow_completed[$interval])) by (task_queue, workflow_type)
+                legend: "{{task_queue}} {{workflow_type}}"
       - graph:
           title: Workflow Completion Latency p95
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.95, sum(rate(temporal_workflow_endtoend_latency_bucket[$interval])) by (namespace, task_queue, workflow_type, le)) * 1000
-                legend: "{{namespace}}: {{task_queue}} {{workflow_type}}"
+                query: avg (k6_temporal_workflow_endtoend_latency_p95) by (task_queue, workflow_type)
+                legend: "{{task_queue}} {{workflow_type}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Workflow Task Execution Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_workflow_task_execution_latency_p95) by (workflow_type)
+                legend: "{{workflow_type}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Workflow Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_workflow_task_schedule_to_start_latency_p95) by (workflow_type)
+                legend: "{{workflow_type}}"
+          axes:
+            left: { unit: ms }
+  - name: Activities
+    panels:
+      - graph:
+          title: Activity Execution Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_activity_execution_latency_p95) by (activity_type)
+                legend: "{{task_queue}} {{activity_type}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Activity Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_activity_schedule_to_start_latency_p95) by (activity_type)
+                legend: "{{task_queue}} {{activity_type}}"
           axes:
             left: { unit: ms }
   - name: Persistence
     panels:
       - graph:
-          title: Create/Update Workflows/second
+          title: Create/Update Workflow Rate
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum(rate(persistence_requests{operation=~"CreateWorkflowExecution|UpdateWorkflowExecution"}[$interval])) by (operation)
+                query: sum (rate(persistence_requests{operation=~"CreateWorkflowExecution|UpdateWorkflowExecution"}[$interval])) by (operation)
                 legend: "{{operation}}"
       - graph:
           title: Create Workflow Latency
@@ -140,31 +189,22 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                query: histogram_quantile(0.90, sum (rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
                 legend: "90"
             - prometheus:
-                query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
+                query: histogram_quantile(0.95, sum (rate(persistence_latency_bucket{operation="GetWorkflowExecution"}[$interval])) by (namespace, le)) * 1000
                 legend: "95"
           axes:
             left: { unit: ms }
-  - name: Service
+  - name: Tasks
     panels:
-      - graph:
-          title: Progress Event Latency p95
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~"RecordActivityTaskHeartbeat|RespondWorkflowTaskCompleted|RespondActivityTaskCompleted"}[$interval])) by (namespace, operation, le))
-                legend: "{{namespace}}: {{operation}}"
-          axes:
-            left: { unit: s }
       - graph:
           title: Timer Task Latency p95
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~"Timer.*"}[$interval])) by (namespace, operation, le))
-                legend: "{{namespace}}: {{operation}}"
+                query: histogram_quantile(0.95, sum (rate(task_latency_queue_bucket{operation=~"Timer.*"}[$interval])) by (operation, le))
+                legend: "{{operation}}"
           axes:
             left: { unit: s }
       - graph:
@@ -172,17 +212,8 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.95, sum(rate(task_latency_queue_bucket{operation=~"Transfer.*"}[$interval])) by (namespace, operation, le))
-                legend: "{{namespace}}: {{operation}}"
-          axes:
-            left: { unit: s }
-      - graph:
-          title: External Event Latency p95
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{operation=~"StartWorkflowExecution|SignalWithStartWorkflowExecution|RequestCancelWorkflowExecution|SignalWorkflowExecution|TerminateWorkflowExecution"}[$interval])) by (namespace, operation, le))
-                legend: "{{namespace}}: {{operation}}"
+                query: histogram_quantile(0.95, sum (rate(task_latency_queue_bucket{operation=~"Transfer.*"}[$interval])) by (operation, le))
+                legend: "{{operation}}"
           axes:
             left: { unit: s }
   - name: Locks
@@ -192,7 +223,7 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.99, sum(rate(cache_latency_bucket{operation="HistoryCacheGetOrCreate"}[$interval])) by (operation, le))
+                query: histogram_quantile(0.99, sum (rate(cache_latency_bucket{operation="HistoryCacheGetOrCreate"}[$interval])) by (operation, le))
                 legend: "{{operation}}"
           axes:
             left: { unit: s }
@@ -201,72 +232,40 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: histogram_quantile(0.99, sum(rate(lock_latency_bucket{operation="ShardInfo"}[$interval])) by (operation, le))
+                query: histogram_quantile(0.99, sum (rate(lock_latency_bucket{operation="ShardInfo"}[$interval])) by (operation, le))
                 legend: "{{operation}}"
           axes:
             left: { unit: s }
   - name: Workers
     panels:
       - graph:
-          title: Workflow Task Execution count
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: sum (rate(temporal_workflow_task_execution_latency_count[$interval])) by (namespace, workflow_type)
-                legend: "{{namespace}}: {{workflow_type}}"
-      - graph:
-          title: Workflow Task Schedule to Start Latency
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: rate(temporal_workflow_task_schedule_to_start_latency_sum[$interval])
-                legend: "{{workflow_type}}"
-          axes:
-            left: { unit: ms }
-      - graph:
-          title: Activity Execution count
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: sum (rate(temporal_activity_execution_latency_count[$interval])) by (namespace, activity_type)
-                legend: "{{namespace}}: {{activity_type}}"
-      - graph:
-          title: Activity Task Schedule to Start Latency
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: sum (rate(temporal_activity_schedule_to_start_latency_sum[$interval])) by (activity_type)
-                legend: "{{activity_type}}"
-          axes:
-            left: { unit: ms }
-      - graph:
           title: Workflow Task Poll
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (rate(temporal_workflow_task_queue_poll_succeed{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
-                legend: "{{namespace}}: {{task_queue}} Succeed"
+                query: sum (rate(k6_temporal_workflow_task_queue_poll_succeed[$interval])) by (task_queue)
+                legend: "{{task_queue}} Succeed"
             - prometheus:
-                query: sum (rate(temporal_workflow_task_queue_poll_empty{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
-                legend: "{{namespace}}: {{task_queue}} Empty"
-      - graph:
-          title: Activity Task Poll
-          datasource: temporal_prometheus
-          targets:
-            - prometheus:
-                query: sum (rate(temporal_activity_poll_no_task{namespace!="temporal_system"}[$interval])) by (namespace, task_queue)
-                legend: "{{namespace}}: {{task_queue}} Emtpy"
+                query: sum (rate(k6_temporal_workflow_task_queue_poll_empty[$interval])) by (task_queue)
+                legend: "{{task_queue}} Empty"
       - graph:
           title: Workflow Task Slots Available
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="WorkflowWorker"}) by (namespace, task_queue)
-                legend: "{{namespace}}: {{task_queue}}"
+                query: sum (k6_temporal_worker_task_slots_available{worker_type="WorkflowWorker"}) by (task_queue)
+                legend: "{{task_queue}}"
+      - graph:
+          title: Activity Task Poll
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(k6_temporal_activity_poll_no_task[$interval])) by (task_queue)
+                legend: "{{task_queue}} Emtpy"
       - graph:
           title: Activity Task Slots Available
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: sum (temporal_worker_task_slots_available{namespace!="temporal_system",worker_type="ActivityWorker"})  by (namespace, task_queue)
-                legend: "{{namespace}}: {{task_queue}}"
+                query: sum (k6_temporal_worker_task_slots_available{worker_type="ActivityWorker"})  by (task_queue)
+                legend: "{{task_queue}}"

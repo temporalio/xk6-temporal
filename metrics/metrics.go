@@ -102,6 +102,8 @@ func RegisterMetrics(registry *metrics.Registry) CustomMetrics {
 		WorkflowFailedCounter:        registry.MustNewMetric(WorkflowFailedCounter, metrics.Counter),
 		WorkflowContinueAsNewCounter: registry.MustNewMetric(WorkflowContinueAsNewCounter, metrics.Counter),
 		WorkflowEndToEndLatency:      registry.MustNewMetric(WorkflowEndToEndLatency, metrics.Trend, metrics.Time),
+
+		WorkerTaskSlotsAvailable: registry.MustNewMetric(WorkerTaskSlotsAvailable, metrics.Gauge),
 	}
 }
 

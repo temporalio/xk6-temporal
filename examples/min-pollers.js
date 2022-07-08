@@ -2,6 +2,14 @@ import temporal from 'k6/x/temporal';
 import { scenario } from 'k6/execution';
 
 export const options = {
+    thresholds: {
+      temporal_workflow_task_schedule_to_start_latency: [
+        { threshold: 'max<1000', abortOnFail: true }
+      ],
+      temporal_activity_schedule_to_start_latency: [
+        { threshold: 'max<1000', abortOnFail: true }
+      ],
+    },
     scenarios: {
       single_activity_workflow_1k: {
         executor: 'shared-iterations',
@@ -12,10 +20,13 @@ export const options = {
 };
 
 export function setup() {
-  const client = temporal.newClient({ host_port: __ENV.TEMPORAL_GRPC_ENDPOINT })
-  const worker = temporal.newWorker(client, {})
-
-  worker.start()
+  temporal.newWorker(
+    { host_port: __ENV.TEMPORAL_GRPC_ENDPOINT },
+    {
+      max_concurrent_workflow_task_pollers: 16,
+      max_concurrent_activity_task_pollers: 16,
+    }
+  ).start()
 }
 
 export default () => {
