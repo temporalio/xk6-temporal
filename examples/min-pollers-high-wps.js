@@ -4,17 +4,17 @@ import { scenario } from 'k6/execution';
 export const options = {
     thresholds: {
       temporal_workflow_task_schedule_to_start_latency: [
-        { threshold: 'max<1000', abortOnFail: true }
+        { threshold: 'max<10000', abortOnFail: true }
       ],
       temporal_activity_schedule_to_start_latency: [
-        { threshold: 'max<1000', abortOnFail: true }
+        { threshold: 'max<10000', abortOnFail: true }
       ],
     },
     scenarios: {
-      single_activity_workflow_1k: {
+      min_pollers_high_wps: {
         executor: 'shared-iterations',
         iterations: '1000',
-        vus: 25,
+        vus: 100,
       },
     },
 };
@@ -23,8 +23,8 @@ export function setup() {
   temporal.newWorker(
     { host_port: __ENV.TEMPORAL_GRPC_ENDPOINT },
     {
-      max_concurrent_workflow_task_pollers: 16,
-      max_concurrent_activity_task_pollers: 16,
+      max_concurrent_workflow_task_pollers: 8,
+      max_concurrent_activity_task_pollers: 8,
     }
   ).start()
 }
