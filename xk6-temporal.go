@@ -50,14 +50,24 @@ func (temporal *ModuleInstance) Exports() modules.Exports {
 
 // NewClient returns a new Temporal Client.
 func (m *ModuleInstance) NewClient(options client.Options) (*client.Client, error) {
-	options.MetricsHandler = metrics.NewClientMetricsHandler(m.vu.Context(), m.vu.State().Samples, map[string]string{}, m.customMetrics)
+	options.MetricsHandler = metrics.NewClientMetricsHandler(
+		m.vu.Context(),
+		m.vu.State().Samples,
+		m.vu.State().Tags.Clone(),
+		m.customMetrics,
+	)
 
 	return client.NewClient(options)
 }
 
 // NewWorker returns a new Temporal Worker with the example workflows registered.
 func (m *ModuleInstance) NewWorker(clientOptions client.Options, options worker.Options) (worker.Worker, error) {
-	clientOptions.MetricsHandler = metrics.NewClientMetricsHandler(context.Background(), m.vu.State().Samples, map[string]string{}, m.customMetrics)
+	clientOptions.MetricsHandler = metrics.NewClientMetricsHandler(
+		context.Background(),
+		m.vu.State().Samples,
+		m.vu.State().Tags.Clone(),
+		m.customMetrics,
+	)
 	// Not sure what to do with these logs, they may be useful.
 	clientOptions.Logger = logger.NewNopLogger()
 
