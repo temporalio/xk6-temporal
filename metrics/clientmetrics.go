@@ -63,16 +63,7 @@ const (
 	WorkflowActiveThreadCount = TemporalMetricsPrefix + "workflow_active_thread_count"
 )
 
-type MetricsHandler struct {
-	ctx     context.Context
-	samples chan<- metrics.SampleContainer
-	tags    map[string]string
-	metrics CustomMetrics
-}
-
-type CustomMetrics map[string]*metrics.Metric
-
-func RegisterMetrics(registry *metrics.Registry) CustomMetrics {
+func RegisterClientMetrics(registry *metrics.Registry) CustomMetrics {
 	return CustomMetrics{
 		TemporalRequest:            registry.MustNewMetric(TemporalRequest, metrics.Counter),
 		TemporalRequestFailure:     registry.MustNewMetric(TemporalRequestFailure, metrics.Counter),
@@ -107,8 +98,17 @@ func RegisterMetrics(registry *metrics.Registry) CustomMetrics {
 	}
 }
 
+type ClientMetricsHandler struct {
+	ctx     context.Context
+	samples chan<- metrics.SampleContainer
+	tags    map[string]string
+	metrics CustomMetrics
+}
+
+type CustomMetrics map[string]*metrics.Metric
+
 func NewClientMetricsHandler(ctx context.Context, samples chan<- metrics.SampleContainer, tags map[string]string, customMetrics CustomMetrics) sdkclient.MetricsHandler {
-	return &MetricsHandler{
+	return &ClientMetricsHandler{
 		ctx:     ctx,
 		samples: samples,
 		tags:    tags,
@@ -116,14 +116,14 @@ func NewClientMetricsHandler(ctx context.Context, samples chan<- metrics.SampleC
 	}
 }
 
-type metricWrapper struct {
+type clientMetricWrapper struct {
 	ctx     context.Context
 	samples chan<- metrics.SampleContainer
 	tags    *metrics.SampleTags
 	metric  *metrics.Metric
 }
 
-func (w metricWrapper) Inc(v int64) {
+func (w clientMetricWrapper) Inc(v int64) {
 	tags := w.tags.CloneTags()
 
 	metrics.PushIfNotDone(
@@ -138,7 +138,7 @@ func (w metricWrapper) Inc(v int64) {
 	)
 }
 
-func (w metricWrapper) Update(v float64) {
+func (w clientMetricWrapper) Update(v float64) {
 	tags := w.tags.CloneTags()
 
 	metrics.PushIfNotDone(
@@ -153,7 +153,7 @@ func (w metricWrapper) Update(v float64) {
 	)
 }
 
-func (w metricWrapper) Record(v time.Duration) {
+func (w clientMetricWrapper) Record(v time.Duration) {
 	tags := w.tags.CloneTags()
 
 	metrics.PushIfNotDone(
@@ -168,7 +168,7 @@ func (w metricWrapper) Record(v time.Duration) {
 	)
 }
 
-func (h *MetricsHandler) WithTags(tags map[string]string) sdkclient.MetricsHandler {
+func (h *ClientMetricsHandler) WithTags(tags map[string]string) sdkclient.MetricsHandler {
 	mergedTags := make(map[string]string, len(h.tags)+len(tags))
 	for k, v := range h.tags {
 		mergedTags[k] = v
@@ -180,25 +180,25 @@ func (h *MetricsHandler) WithTags(tags map[string]string) sdkclient.MetricsHandl
 	return NewClientMetricsHandler(h.ctx, h.samples, mergedTags, h.metrics)
 }
 
-func (h *MetricsHandler) Counter(name string) sdkclient.MetricsCounter {
+func (h *ClientMetricsHandler) Counter(name string) sdkclient.MetricsCounter {
 	if m, ok := h.metrics[name]; ok {
-		return metricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
 	}
 
 	return sdkclient.MetricsNopHandler.Counter(name)
 }
 
-func (h *MetricsHandler) Gauge(name string) sdkclient.MetricsGauge {
+func (h *ClientMetricsHandler) Gauge(name string) sdkclient.MetricsGauge {
 	if m, ok := h.metrics[name]; ok {
-		return metricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
 	}
 
 	return sdkclient.MetricsNopHandler.Gauge(name)
 }
 
-func (h *MetricsHandler) Timer(name string) sdkclient.MetricsTimer {
+func (h *ClientMetricsHandler) Timer(name string) sdkclient.MetricsTimer {
 	if m, ok := h.metrics[name]; ok {
-		return metricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
 	}
 
 	return sdkclient.MetricsNopHandler.Timer(name)

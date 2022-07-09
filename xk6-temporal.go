@@ -5,11 +5,11 @@ import (
 
 	"go.k6.io/k6/js/modules"
 
-	sdkclient "go.temporal.io/sdk/client"
-
+	"github.com/DataDog/temporalite"
 	"github.com/temporalio/xk6-temporal/client"
 	"github.com/temporalio/xk6-temporal/logger"
 	"github.com/temporalio/xk6-temporal/metrics"
+	"github.com/temporalio/xk6-temporal/server"
 	"github.com/temporalio/xk6-temporal/worker"
 )
 
@@ -38,7 +38,7 @@ var (
 func (*RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
 	return &ModuleInstance{
 		vu:            vu,
-		customMetrics: metrics.RegisterMetrics(vu.InitEnv().Registry),
+		customMetrics: metrics.RegisterClientMetrics(vu.InitEnv().Registry),
 	}
 }
 
@@ -71,10 +71,17 @@ func (m *ModuleInstance) NewWorker(clientOptions client.Options, options worker.
 	// Not sure what to do with these logs, they may be useful.
 	clientOptions.Logger = logger.NewNopLogger()
 
-	c, err := sdkclient.Dial(clientOptions)
-	if err != nil {
-		return nil, err
-	}
+	return worker.NewWorker(clientOptions, options)
+}
 
-	return worker.NewWorker(c, options)
+// NewServer returns a new Temporalite Server.
+func (m *ModuleInstance) NewTemporaliteServer() (*temporalite.Server, error) {
+	metricsHandler := metrics.NewServerMetricsHandler(
+		context.Background(),
+		m.vu.State().Samples,
+		m.vu.State().Tags.Clone(),
+		m.customMetrics,
+	)
+
+	return server.NewTemporaliteServer(metricsHandler)
 }
