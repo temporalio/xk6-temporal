@@ -5,11 +5,9 @@ import (
 
 	"go.k6.io/k6/js/modules"
 
-	"github.com/DataDog/temporalite"
 	"github.com/temporalio/xk6-temporal/client"
 	"github.com/temporalio/xk6-temporal/logger"
 	"github.com/temporalio/xk6-temporal/metrics"
-	"github.com/temporalio/xk6-temporal/server"
 	"github.com/temporalio/xk6-temporal/worker"
 )
 
@@ -72,16 +70,4 @@ func (m *ModuleInstance) NewWorker(clientOptions client.Options, options worker.
 	clientOptions.Logger = logger.NewNopLogger()
 
 	return worker.NewWorker(clientOptions, options)
-}
-
-// NewServer returns a new Temporalite Server.
-func (m *ModuleInstance) NewTemporaliteServer() (*temporalite.Server, error) {
-	metricsHandler := metrics.NewServerMetricsHandler(
-		context.Background(),
-		m.vu.State().Samples,
-		m.vu.State().Tags.Clone(),
-		m.customMetrics,
-	)
-
-	return server.NewTemporaliteServer(metricsHandler)
 }
