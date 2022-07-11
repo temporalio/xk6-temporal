@@ -19,6 +19,17 @@ export const options = {
   },
 };
 
+// Experiment by changing the shard count.
+// A good indicator is to try with ECHO_WORKFLOW_SHARD=1 and ECHO_WORKFLOW_SHARD=4.
+// You should see a marked improvement in test speed with 4 shards versus 1 as
+// it reduces the contention on the lock which is required to update the
+// workflow history for the signal echo workflow as it receives and sends
+// signals.
+
+// Try to avoid any Temporal designs that involve a single workflow sending or
+// receiving a large number of signals. Where possible this responsiblity should
+// be shared among many workflow executions.
+
 const ECHO_WORKFLOW_SHARD = 4
 
 export function setup() {
