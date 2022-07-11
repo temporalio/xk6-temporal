@@ -17,6 +17,8 @@ func NewWorker(clientOptions client.Options, options Options) (worker.Worker, er
 	w := worker.New(c, "benchmark", options)
 
 	w.RegisterWorkflow(SingleActivityWorkflow)
+	w.RegisterWorkflow(SignalEchoWorkflow)
+	w.RegisterWorkflow(SignalWaiterWorkflow)
 	w.RegisterActivity(SayHello)
 
 	return w, nil
