@@ -44,6 +44,3 @@ services:
       - type: bind
         source: ./grafana/provisioning
         target: /etc/grafana/provisioning
-      - type: bind
-        source: ./grafana/dashboards
-        target: /var/lib/grafana/dashboards
