@@ -1,0 +1,103 @@
+title: Temporal Workers
+
+editable: true
+tags: [generated]
+time: [now-30m, now]
+auto_refresh: 30s
+shared_crosshair: true
+
+variables:
+  - const:
+      name: namespace
+      hide: variable
+      values_map:
+        default: default
+      default: default
+
+rows:
+  - name: Polling
+    panels:
+      - graph:
+          title: Poll Request Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_long_request_latency_p95{namespace="$namespace"}) by (operation)
+                legend: "{{operation}} (k6)"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_long_request_latency_bucket{namespace="$namespace",operation=~"Poll.*"}[$__rate_interval])) by (operation, le))
+                legend: "{{operation}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Workflow Task Poll Success Rate
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: |
+                  sum(rate(k6_temporal_workflow_task_queue_poll_succeed{namespace="$namespace"}[$__rate_interval])) by (task_queue) /
+                  sum(rate({__name__=~"k6_temporal_workflow_task_queue_poll_succeed|k6_temporal_workflow_task_queue_poll_empty",namespace="$namespace"}[$__rate_interval])) by (task_queue)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: |
+                  sum(rate(temporal_workflow_task_queue_poll_succeed{namespace="$namespace"}[$__rate_interval])) by (task_queue) /
+                  sum(rate({__name__=~"temporal_workflow_task_queue_poll_succeed|temporal_workflow_task_queue_poll_empty",namespace="$namespace"}[$__rate_interval])) by (task_queue)
+                legend: "{{task_queue}}"
+          axes:
+            left: { unit: percentunit }
+      - graph:
+          title: Activity Task Poll Timeout
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(k6_temporal_activity_poll_no_task{namespace="$namespace"}[$__rate_interval])) by (task_queue)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: sum (rate(temporal_activity_poll_no_task{namespace="$namespace"}[$__rate_interval])) by (task_queue)
+                legend: "{{task_queue}}"
+  - name: Scaling
+    panels:
+      - graph:
+          title: Workflow Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_workflow_task_schedule_to_start_latency_p95{namespace="$namespace"}) by (task_queue)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_workflow_task_schedule_to_start_latency_bucket{namespace="$namespace"}[$__rate_interval])) by (task_queue, le))
+                legend: "{{task_queue}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Activity Task Schedule to Start Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_activity_schedule_to_start_latency_p95{namespace="$namespace"}) by (activity_type)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_activity_schedule_to_start_latency_bucket{namespace="$namespace"}[$__rate_interval])) by (task_queue, le))
+                legend: "{{task_queue}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Workflow Task Slots Available
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (k6_temporal_worker_task_slots_available{namespace="$namespace",worker_type="WorkflowWorker"}) by (task_queue)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: sum (temporal_worker_task_slots_available{namespace="$namespace",worker_type="WorkflowWorker"}) by (task_queue)
+                legend: "{{task_queue}}"
+      - graph:
+          title: Activity Task Slots Available
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (k6_temporal_worker_task_slots_available{namespace="$namespace",worker_type="ActivityWorker"})  by (task_queue)
+                legend: "{{task_queue}} (k6)"
+            - prometheus:
+                query: sum (temporal_worker_task_slots_available{namespace="$namespace",worker_type="ActivityWorker"})  by (task_queue)
+                legend: "{{task_queue}}"

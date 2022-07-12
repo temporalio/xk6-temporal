@@ -14,10 +14,14 @@ services:
       - POSTGRES_USER=temporal
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=postgresql
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/dynamic-config.yaml
       - PROMETHEUS_ENDPOINT=0.0.0.0:9000
+      - NUM_HISTORY_SHARDS=4
     image: temporalio/auto-setup:1.17.0
     ports:
       - 7233:7233
+    volumes:
+      - ./dynamic-config.yaml:/etc/temporal/config/dynamicconfig/dynamic-config.yaml
   prometheus:
     image: prom/prometheus
     command:

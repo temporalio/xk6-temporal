@@ -196,6 +196,25 @@ rows:
                 legend: "95"
           axes:
             left: { unit: ms }
+      - graph:
+          title: Create Task
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: sum (rate(persistence_requests{operation=~"CreateTask"}[$interval])) by (operation)
+                legend: "{{operation}}"
+      - graph:
+          title: Create Task Latency
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: histogram_quantile(0.90, sum(rate(persistence_latency_bucket{operation="CreateTask"}[$interval])) by (namespace, le)) * 1000
+                legend: "90"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(persistence_latency_bucket{operation="CreateTask"}[$interval])) by (namespace, le)) * 1000
+                legend: "95"
+          axes:
+            left: { unit: ms }
   - name: Tasks
     panels:
       - graph:

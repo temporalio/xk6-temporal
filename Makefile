@@ -5,3 +5,4 @@ k6: go.mod go.sum *.go client/*.go worker/*.go logger/*.go metrics/*.go
 
 dashboards:
 	grabana apply -g ${GRAFANA_URL} -f xk6-temporal -i grafana/dashboards/k6-temporal.yml
+	grabana apply -g ${GRAFANA_URL} -f Temporal -i grafana/dashboards/workers.yml

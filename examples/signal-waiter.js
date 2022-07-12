@@ -5,16 +5,16 @@ export const options = {
   scenarios: {
     signal_waiters_start: {
       executor: 'shared-iterations',
-      iterations: '1000',
+      iterations: '10000',
       vus: 100,
       exec: 'starter',
     },
     signal_waiters_complete: {
       executor: 'shared-iterations',
-      iterations: '1000',
+      iterations: '10000',
       vus: 100,
       exec: 'waiter',
-      startTime: '3s',
+      startTime: '5s',
     },
   },
 };

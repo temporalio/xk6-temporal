@@ -21,8 +21,12 @@ export const options = {
 
 export function setup() {
   // Experiment by reducing the poller counts below.
-  // If the poller counts are too low and there are not pollers on each task queue partition the worker can block long polling on an empty task queue partition.
-  // This will show in the metrics as high temporal_workflow_task_schedule_to_start_latency and temporal_activity_schedule_to_start_latency.
+  
+  // If the poller counts are too low and there are not pollers on each task
+  // queue partition the worker can block long polling on an empty task queue
+  // partition. This will show in the metrics as high
+  // temporal_workflow_task_schedule_to_start_latency and
+  // temporal_activity_schedule_to_start_latency.
   temporal.newWorker(
     { host_port: __ENV.TEMPORAL_GRPC_ENDPOINT },
     {
