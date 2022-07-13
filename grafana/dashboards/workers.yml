@@ -22,10 +22,22 @@ rows:
           datasource: temporal_prometheus
           targets:
             - prometheus:
-                query: avg (k6_temporal_long_request_latency_p95{namespace="$namespace"}) by (operation)
+                query: avg (k6_temporal_long_request_latency_p95{namespace="$namespace",operation=~"Poll.*"}) by (operation)
                 legend: "{{operation}} (k6)"
             - prometheus:
                 query: histogram_quantile(0.95, sum(rate(temporal_long_request_latency_bucket{namespace="$namespace",operation=~"Poll.*"}[$__rate_interval])) by (operation, le))
+                legend: "{{operation}}"
+          axes:
+            left: { unit: ms }
+      - graph:
+          title: Response Latency p95
+          datasource: temporal_prometheus
+          targets:
+            - prometheus:
+                query: avg (k6_temporal_request_latency_p95{namespace="$namespace",operation=~"Respond.*"}) by (operation)
+                legend: "{{operation}} (k6)"
+            - prometheus:
+                query: histogram_quantile(0.95, sum(rate(temporal_request_latency_bucket{namespace="$namespace",operation=~"Respond.*"}[$__rate_interval])) by (operation, le))
                 legend: "{{operation}}"
           axes:
             left: { unit: ms }
