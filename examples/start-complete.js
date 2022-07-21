@@ -3,11 +3,10 @@ import { scenario } from 'k6/execution';
 
 export const options = {
     scenarios: {
-      single_activity_workflow_10k: {
-        executor: 'shared-iterations',
-        iterations: '10000',
-        vus: 100,
-        maxDuration: '30m',
+      min_pollers_high_wps: {
+        executor: 'constant-vus',
+        duration: '5m',
+        vus: 200,
       },
     },
 };
@@ -20,12 +19,12 @@ export default () => {
             task_queue: 'benchmark',
             id: 'wf-' + scenario.iterationInTest,
         },
-        'SingleActivityWorkflow',
+        'MyWorkflow',
         'bob',
     )
 
     // Wait until the workflow has completed.
-    const result = handle.result()
+    handle.result()
 
     client.close()
 };

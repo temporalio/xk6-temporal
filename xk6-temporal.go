@@ -1,14 +1,10 @@
 package temporal
 
 import (
-	"context"
-
 	"go.k6.io/k6/js/modules"
 
 	"github.com/temporalio/xk6-temporal/client"
-	"github.com/temporalio/xk6-temporal/logger"
 	"github.com/temporalio/xk6-temporal/metrics"
-	"github.com/temporalio/xk6-temporal/worker"
 )
 
 func init() {
@@ -56,18 +52,4 @@ func (m *ModuleInstance) NewClient(options client.Options) (*client.Client, erro
 	)
 
 	return client.NewClient(options)
-}
-
-// NewWorker returns a new Temporal Worker with the example workflows registered.
-func (m *ModuleInstance) NewWorker(clientOptions client.Options, options worker.Options) (worker.Worker, error) {
-	clientOptions.MetricsHandler = metrics.NewClientMetricsHandler(
-		context.Background(),
-		m.vu.State().Samples,
-		m.vu.State().Tags.Clone(),
-		m.customMetrics,
-	)
-	// Not sure what to do with these logs, they may be useful.
-	clientOptions.Logger = logger.NewNopLogger()
-
-	return worker.NewWorker(clientOptions, options)
 }
