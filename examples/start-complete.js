@@ -20,9 +20,7 @@ export default () => {
             id: 'wf-' + scenario.iterationInTest,
         },
         'ExecuteActivity',
-        1, // only run the activity once
-        'Echo',
-        'test',
+        {"Count": 1, "Activity": "Echo", "Input": {"Message": "test"}},
     )
 
     // Wait until the workflow has completed.
