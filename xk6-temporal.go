@@ -1,6 +1,8 @@
 package temporal
 
 import (
+	"os"
+
 	"go.k6.io/k6/js/modules"
 
 	"github.com/temporalio/xk6-temporal/client"
@@ -44,6 +46,9 @@ func (temporal *ModuleInstance) Exports() modules.Exports {
 
 // NewClient returns a new Temporal Client.
 func (m *ModuleInstance) NewClient(options client.Options) (*client.Client, error) {
+	if options.HostPort == "" {
+		options.HostPort = os.Getenv("TEMPORAL_GRPC_ENDPOINT")
+	}
 	options.MetricsHandler = metrics.NewClientMetricsHandler(
 		m.vu.Context(),
 		m.vu.State().Samples,
