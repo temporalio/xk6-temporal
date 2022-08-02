@@ -31,7 +31,11 @@ kubectl run k6-benchmark -ti \
 
 You will see the benchmark progress and the final statistics on screen.
 
-If you have prometheus setup we recommend that you also send k6 metrics to your prometheus instance to more easily tie k6 results to changes in Temporal metrics. To do this you can run the benchmark like so:
+## Metrics
+
+Currently the Temporal Client that the extension creates have their metrics wired into the k6 system. This has the benefit of being visible inside the k6 infrastructure for use in k6 checks and thresholds. The downside is that these metrics cannot be scraped into Prometheus to appear in the same way that SDK metrics normally would if exported from an application. This is because k6 adds a prefix to metrics and also handles histograms differently by pre-processing them into p95 and so on, as opposed to Temporal SDK's standard behaviour of sending them on to Prometheus as it's native histogram type. We are interested in feedback for what we might improve here.
+
+Having said all that, if you do have Prometheus setup we recommend that you send the k6 metrics to your Prometheus instance to more easily tie k6 results to changes in Temporal metrics. To do this you can configure k6 to push metrics to Prometheus by running a benchmark like so:
 
 ```
 kubectl run k6-benchmark -ti \
