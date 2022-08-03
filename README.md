@@ -24,6 +24,7 @@ To run one of our example benchmark scripts against Temporal in a Kubernetes clu
 kubectl run k6-benchmark -ti \
     --image ghcr.io/temporalio/xk6-temporal:main \
     --image-pull-policy Always \
+    --restart Never \
     --env TEMPORAL_GRPC_ENDPOINT=temporal-frontend.temporal:7233 \
     --
     k6 run ./examples/start-complete.js
@@ -41,6 +42,7 @@ Having said all that, if you do have Prometheus setup we recommend that you send
 kubectl run k6-benchmark -ti \
     --image ghcr.io/temporalio/xk6-temporal:main \
     --image-pull-policy Always \
+    --restart Never \
     --env TEMPORAL_GRPC_ENDPOINT=temporal-frontend.temporal:7233 \
     --env K6_PROMETHEUS_REMOTE_URL=http://temporal-prometheus.temporal:9090/api/v1/write \
     --
