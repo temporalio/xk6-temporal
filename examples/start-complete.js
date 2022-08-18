@@ -4,9 +4,9 @@ import { scenario } from 'k6/execution';
 export const options = {
     scenarios: {
       start_complete: {
-        executor: 'constant-vus',
-        duration: '5m',
-        vus: 200,
+        executor: 'shared-iterations',
+        iterations: '10000',
+        vus: 100,
       },
     },
 };
