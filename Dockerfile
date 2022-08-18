@@ -14,6 +14,9 @@ RUN xk6 build --output /usr/local/bin/k6 \
 
 FROM scratch
 
+WORKDIR /opt/k6
+
 COPY --from=builder /usr/local/bin/k6 /usr/local/bin/k6
+COPY ./examples /opt/k6/examples
 
 CMD ["k6"]
