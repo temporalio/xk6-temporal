@@ -2,8 +2,6 @@ module github.com/temporalio/xk6-temporal
 
 go 1.18
 
-replace github.com/DataDog/temporalite v0.0.0-20220707201718-80ecd27ddfca => github.com/robholland/temporalite v0.0.0-20220708180137-f129795b6aea
-
 require (
 	go.k6.io/k6 v0.39.0
 	go.temporal.io/api v1.8.1-0.20220603192404-e65836719706
