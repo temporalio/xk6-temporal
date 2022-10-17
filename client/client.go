@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"go.temporal.io/api/workflowservice/v1"
@@ -41,9 +40,6 @@ func (r WorkflowHandle) Result() (interface{}, error) {
 	var result interface{}
 
 	err := r.run.Get(context.Background(), &result)
-	for errors.Is(err, context.DeadlineExceeded) {
-		err = r.run.Get(context.Background(), &result)
-	}
 
 	return result, err
 }
