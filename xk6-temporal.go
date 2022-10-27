@@ -52,7 +52,7 @@ func (m *ModuleInstance) NewClient(options client.Options) (*client.Client, erro
 	options.MetricsHandler = metrics.NewClientMetricsHandler(
 		m.vu.Context(),
 		m.vu.State().Samples,
-		m.vu.State().Tags.Clone(),
+		m.vu.State().Tags.GetCurrentValues(),
 		m.customMetrics,
 	)
 

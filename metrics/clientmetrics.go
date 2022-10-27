@@ -101,17 +101,17 @@ func RegisterClientMetrics(registry *metrics.Registry) CustomMetrics {
 type ClientMetricsHandler struct {
 	ctx     context.Context
 	samples chan<- metrics.SampleContainer
-	tags    map[string]string
+	tags    metrics.TagsAndMeta
 	metrics CustomMetrics
 }
 
 type CustomMetrics map[string]*metrics.Metric
 
-func NewClientMetricsHandler(ctx context.Context, samples chan<- metrics.SampleContainer, tags map[string]string, customMetrics CustomMetrics) sdkclient.MetricsHandler {
+func NewClientMetricsHandler(ctx context.Context, samples chan<- metrics.SampleContainer, tagsAndMeta metrics.TagsAndMeta, customMetrics CustomMetrics) sdkclient.MetricsHandler {
 	return &ClientMetricsHandler{
 		ctx:     ctx,
 		samples: samples,
-		tags:    tags,
+		tags:    tagsAndMeta,
 		metrics: customMetrics,
 	}
 }
@@ -119,70 +119,67 @@ func NewClientMetricsHandler(ctx context.Context, samples chan<- metrics.SampleC
 type clientMetricWrapper struct {
 	ctx     context.Context
 	samples chan<- metrics.SampleContainer
-	tags    *metrics.SampleTags
+	tags    metrics.TagsAndMeta
 	metric  *metrics.Metric
 }
 
 func (w clientMetricWrapper) Inc(v int64) {
-	tags := w.tags.CloneTags()
-
 	metrics.PushIfNotDone(
 		w.ctx,
 		w.samples,
 		metrics.Sample{
-			Time:   time.Now(),
-			Metric: w.metric,
-			Tags:   metrics.IntoSampleTags(&tags),
-			Value:  float64(v),
+			Time: time.Now(),
+			TimeSeries: metrics.TimeSeries{
+				Metric: w.metric,
+				Tags:   w.tags.Tags,
+			},
+			Metadata: w.tags.Metadata,
+			Value:    float64(v),
 		},
 	)
 }
 
 func (w clientMetricWrapper) Update(v float64) {
-	tags := w.tags.CloneTags()
-
 	metrics.PushIfNotDone(
 		w.ctx,
 		w.samples,
 		metrics.Sample{
-			Time:   time.Now(),
-			Metric: w.metric,
-			Tags:   metrics.IntoSampleTags(&tags),
-			Value:  v,
+			Time: time.Now(),
+			TimeSeries: metrics.TimeSeries{
+				Metric: w.metric,
+				Tags:   w.tags.Tags,
+			},
+			Metadata: w.tags.Metadata,
+			Value:    v,
 		},
 	)
 }
 
 func (w clientMetricWrapper) Record(v time.Duration) {
-	tags := w.tags.CloneTags()
-
 	metrics.PushIfNotDone(
 		w.ctx,
 		w.samples,
 		metrics.Sample{
-			Time:   time.Now(),
-			Metric: w.metric,
-			Tags:   metrics.IntoSampleTags(&tags),
-			Value:  metrics.D(v),
+			Time: time.Now(),
+			TimeSeries: metrics.TimeSeries{
+				Metric: w.metric,
+				Tags:   w.tags.Tags,
+			},
+			Metadata: w.tags.Metadata,
+			Value:    metrics.D(v),
 		},
 	)
 }
 
 func (h *ClientMetricsHandler) WithTags(tags map[string]string) sdkclient.MetricsHandler {
-	mergedTags := make(map[string]string, len(h.tags)+len(tags))
-	for k, v := range h.tags {
-		mergedTags[k] = v
-	}
-	for k, v := range tags {
-		mergedTags[k] = v
-	}
-
-	return NewClientMetricsHandler(h.ctx, h.samples, mergedTags, h.metrics)
+	copy := h.tags.Clone()
+	copy.Tags = copy.Tags.WithTagsFromMap(tags)
+	return NewClientMetricsHandler(h.ctx, h.samples, copy, h.metrics)
 }
 
 func (h *ClientMetricsHandler) Counter(name string) sdkclient.MetricsCounter {
 	if m, ok := h.metrics[name]; ok {
-		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, (h.tags), m}
 	}
 
 	return sdkclient.MetricsNopHandler.Counter(name)
@@ -190,7 +187,7 @@ func (h *ClientMetricsHandler) Counter(name string) sdkclient.MetricsCounter {
 
 func (h *ClientMetricsHandler) Gauge(name string) sdkclient.MetricsGauge {
 	if m, ok := h.metrics[name]; ok {
-		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, h.tags, m}
 	}
 
 	return sdkclient.MetricsNopHandler.Gauge(name)
@@ -198,7 +195,7 @@ func (h *ClientMetricsHandler) Gauge(name string) sdkclient.MetricsGauge {
 
 func (h *ClientMetricsHandler) Timer(name string) sdkclient.MetricsTimer {
 	if m, ok := h.metrics[name]; ok {
-		return clientMetricWrapper{h.ctx, h.samples, metrics.NewSampleTags(h.tags), m}
+		return clientMetricWrapper{h.ctx, h.samples, (h.tags), m}
 	}
 
 	return sdkclient.MetricsNopHandler.Timer(name)
