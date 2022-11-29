@@ -10,6 +10,7 @@ RUN go mod download && go mod verify
 COPY . .
 RUN xk6 build --output /usr/local/bin/k6 \
     --with github.com/grafana/xk6-output-prometheus-remote \
+    --with github.com/temporalio/xk6-prometheus-client \
     --with github.com/temporalio/xk6-temporal=.
 
 FROM alpine:3.16
